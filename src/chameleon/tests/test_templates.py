@@ -620,6 +620,51 @@ class TestZopePageTemplates:
         assert template.debug
         assert isinstance(template.loader, ModuleLoader)
 
+    def test_fill_slot_error(self):
+
+        def value():
+            return 7/0
+
+        template = self.from_string(
+            '''
+            <div metal:use-macro="macro">
+                <div metal:fill-slot="content"
+                      tal:condition="value()">
+                </div>
+            </div>
+            ''', filename='templatefile_test1.pt')
+
+        macro = self.from_string(
+            '''
+            <div metal:define-macro="macro">
+                <div metal:define-slot="content"></div>
+            </div>''', filename='macrofile_test1.pt')
+
+        template(macro=macro, value=value)
+
+    def test_fill_slot_error2(self):
+
+        value = lambda: 7/0
+        value2 = 'Hi'
+
+        template = self.from_string(
+            '''
+            <div metal:use-macro="macro">
+                <div metal:fill-slot="content"
+                    tal:condition="value()">
+                </div>
+            </div>
+            ''', filename='templatefile_test2.pt')
+
+        macro = self.from_string(
+            '''
+            <div metal:define-macro="macro">
+                <p tal:content="value2"></p>
+                <div metal:define-slot="content"></div>
+            </div>''', filename='macrofilename_test2.pt')
+
+        template(macro=macro, value=value, value2=value2)
+
     def test_tag_mismatch(self):
         from chameleon.exc import ParseError
 
